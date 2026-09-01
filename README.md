@@ -11,12 +11,21 @@ This is the companion code for the forthcoming preprint
 
 ## Background
 
-A **layered mixed matrix** (LM-matrix) is a block matrix split into a rational part `Q`
-and a generic part `T` whose nonzero entries are algebraically independent.
-Murota's combinatorial canonical form is the finest block-triangular decomposition
-attainable under LM-equivalence. It is canonical and computable in polynomial time.
-The determinant factors as the product of the determinants of the diagonal blocks,
-and the block poset governs the zero pattern of the inverse.
+A **layered mixed matrix** (LM-matrix) is a block matrix `[T | Q]` in which the
+nonzero entries of the generic part `T` are algebraically independent over the field
+to which the entries of the rational part `Q` belong. Its **combinatorial canonical
+form** is the combinatorially unique finest block-triangular form attainable under
+LM-equivalence, that is, under row and column permutations together with a change of
+basis of the numeric part. The block structure is uniquely determined; the entries of
+the numeric part are not. When the `Q`-part is empty, the CCF reduces to the
+Dulmage–Mendelsohn decomposition.
+
+The CCF was established by Murota, Iri and Nakamura; see Murota, *Matrices and
+Matroids for Systems Analysis* (Springer, 2000) for a full account. It is computable
+in polynomial time by matroid-theoretic methods, via a submodular flow model. Two of
+its properties drive everything below: the determinant factors as the product of the
+determinants of the diagonal blocks, and the block poset governs the zero pattern of
+the inverse.
 
 For a reaction network with stoichiometric matrix `S` and symbolic reactivity matrix
 `R`, the symbolic Jacobian is `G = SR`. Choosing a Gale dual `C` of `S`, i.e. a basis
@@ -28,7 +37,15 @@ some nonzero constant `c`. The CCF of `A` then yields, in one computation:
 * the buffering structures of the network, as the order ideals of the block poset,
 * the influence graph, i.e. which reactions influence which species concentrations.
 
-The implementation follows the augmenting-path algorithm of Murota and Scharbrodt.
+The implementation follows
+
+> K. Murota and M. Scharbrodt. *Computing the combinatorial canonical form of a
+> layered mixed matrix.* Optimization Methods and Software, 1998.
+> [doi:10.1080/10556789808805720](https://doi.org/10.1080/10556789808805720)
+
+The computation runs in two phases: a maximum independent assignment is found in an
+auxiliary network, and that network is then decomposed into strongly connected
+components.
 
 ## Installation
 
@@ -91,8 +108,9 @@ of `R`. No kinetics, no rate constants and no numerical values enter the computa
 The product of the three block determinants is, up to a nonzero constant, the full
 symbolic Jacobian determinant.
 
-`C0` and `C∞`, the horizontal and vertical tails, are both empty, which is exactly
-the statement that the matrix is square and nonsingular.
+`C0` and `C∞`, the column index sets of Murota's horizontal and vertical tails, are
+both empty here; for a square matrix that is exactly the statement that it is
+nonsingular.
 
 The poset has the single cover relation `C2 -> C3`, with `C1` incomparable to both.
 By the main theorem of the paper, the inverse is fully dense exactly on the three diagonal blocks and on
@@ -170,16 +188,16 @@ The two modes take their arguments in opposite orders:
 ## API
 
 Both entry points compute the same combinatorial canonical form and return the same
-`CCFResult`. They differ only in the initialisation, which is where the speed comes
-from.
+`CCFResult`. They differ only in how the independent assignment is initialised, which
+is where the speed difference comes from.
 
 | function | algorithm |
 |---|---|
-| `ccf(A; maxiter)` | The algorithm of Murota and Scharbrodt. Step A builds a greedy initial matching in the generic part, Step B a greedy initial basis of the numeric part, and the augmenting-path phase then proceeds from there. This is the recommended entry point and the one used for the computations in the paper. |
-| `ccf_original(A; maxiter)` | Murota's original algorithm: the same augmenting-path phase, but started from the empty matching. Kept as a reference implementation. |
+| `ccf(A; maxiter)` | The improved algorithm of Murota and Scharbrodt (their Section 3). Step A greedily matches the rows of the generic part, so that the corresponding augmenting paths have length one and need no pivoting. Step B, in the *new algorithm* variant of their Section 3.2, runs over the rows of the numeric part and pivots on the first nonzero entry lying in a column that is not yet matched, which yields a large initial independent set. The augmenting-path phase then proceeds from there. This is the recommended entry point and the one used for the computations in the paper. |
+| `ccf_original(A; maxiter)` | The original algorithm of Murota, as presented in Section 2 of Murota–Scharbrodt: the same augmenting-path phase, but started from the empty assignment. Kept as a reference implementation. |
 
-Because the CCF is canonical, the two must return identical block structures on every
-input, which makes `ccf_original` a useful correctness check on `ccf`.
+Since the CCF is combinatorially unique, the two must return identical block
+structures on every input, which makes `ccf_original` a correctness check on `ccf`.
 
 A `CCFResult` carries the column blocks `C0, Cblocks, C∞`, the corresponding row
 blocks `R0Q/R0T`, `RblocksQ/RblocksT`, `R∞Q/R∞T`, the pivoted matrix `P`, and the
