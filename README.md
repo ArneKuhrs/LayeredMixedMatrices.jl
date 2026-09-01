@@ -94,9 +94,7 @@ the three block determinants is, up to sign, the full symbolic Jacobian determin
 the statement that the matrix is square and nonsingular.
 
 The poset has the single cover relation `C2 -> C3`, with `C1` incomparable to both.
-This is chemically right: reactions 5 and 6 touch only `X3`, so that block is
-isolated, while `X2` feeds into `X1` through `X2 -> X1 + 3 X2`. By the main theorem
-of the paper, the inverse is fully dense exactly on the three diagonal blocks and on
+By the main theorem of the paper, the inverse is fully dense exactly on the three diagonal blocks and on
 the `(2,3)` block, and identically zero elsewhere. The three-element poset has six
 order ideals, and these are the six buffering structures of the network.
 
