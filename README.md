@@ -29,21 +29,28 @@ Pkg.add(url = "https://github.com/ArneKuhrs/LayeredMixedMatrices.jl")
 
 ## Examples of usage
 
-The core routines need no external dependencies. We use the running example of the
-paper, a network with three species and six reactions:
+You load the package in a Julia session by running the following command:
+
+```julia
+using LayeredMixedMatrices
+```
+
+You can either compute the CCF directly for a layered mixed matrix given by its
+numeric and generic parts, or for a chemical reaction network given in Catalyst
+format.
+
+For the running example in the paper, a network with three species and six reactions,
 
 ```
 X1 -> 2 X1                  X2 -> 2 X2                  X3 -> 2 X3
 2 X1 + X2 -> X2             X2 -> X1 + 3 X2             X3 -> 0
 ```
 
-Supply a basis `C` of `ker(S)` and the support `Rpat` of the symbolic reactivity
-matrix, where `Rpat[rho, m]` is `true` exactly when species `X_m` is a reactant of
-reaction `rho`.
+we supply a basis `C` of `ker(S)` together with the support `Rpat` of the symbolic
+reactivity matrix, where `Rpat[rho, m]` is `true` exactly when species `X_m` is a
+reactant of reaction `rho`, and compute the CCF as follows.
 
 ```julia-repl
-julia> using LayeredMixedMatrices
-
 julia> C = [1 2 0; 0 1 0; 2 0 0; -1 0 0; 0 0 1; 0 0 1];
 
 julia> Rpat = Bool[1 0 0; 1 1 0; 0 1 0; 0 1 0; 0 0 1; 0 0 1];
@@ -74,24 +81,28 @@ CCFResult
   colperm = [5, 6, 3, 4, 1, 2]
 ```
 
-The three diagonal blocks are recovered from the network structure alone, with no
-kinetics and no numerical values:
+The three diagonal blocks are the subnetworks `({X1}, {1,2})`, `({X2}, {3,4})` and
+`({X3}, {5,6})`, recovered from the network structure alone. Their determinants are
+the irreducible factors of the symbolic Jacobian determinant.
 
-| block | reactions | species | determinant of the diagonal block |
-|---|---|---|---|
-| `C1` | 5, 6 | `X3` | `r_6_3 - r_5_3` |
-| `C2` | 3, 4 | `X2` | `r_3_2 + 2 r_4_2` |
-| `C3` | 1, 2 | `X1` | `2 r_2_1 - r_1_1` |
+The partial order on the blocks, whose order ideals are the buffering structures of
+the network, is read off with the following commands.
 
-Their product is, up to a nonzero constant, the full symbolic Jacobian determinant.
-The tails `C0` and `C∞` are empty, which for a square matrix says exactly that it is
-nonsingular. The block poset has the single cover relation `C2 -> C3`, so its order
-ideals number six: these are the six buffering structures of the network.
+```julia-repl
+julia> block_poset(res)
+1-element Vector{Tuple{Int64, Int64}}:
+ (2, 3)
 
-### With Catalyst and Oscar
+julia> column_block_order(res)
+3×3 BitMatrix:
+ 1  0  0
+ 0  1  1
+ 0  0  1
+```
 
-The same computation runs from the network itself in the `examples` environment, and
-returns the symbolic determinants rather than only the block structure. 
+We can also apply the same computation directly to a chemical reaction network,
+through our interface to `Catalyst.jl` and `Oscar.jl` in the `examples` environment,
+which additionally returns the symbolic determinants of the diagonal blocks.
 
 ```julia-repl
 julia> using Pkg; Pkg.instantiate()
@@ -131,7 +142,11 @@ julia> for i in eachindex(res.Cblocks)
 
 julia> factor(det(hcat(matrix(T, C), R)))
 (r_3_2 + 2*r_4_2) * (r_1_1 - 2*r_2_1) * (r_5_3 - r_6_3)
+```
 
+To obtain the block-triangular matrix itself, we use the `ccf_form` command.
+
+```julia-repl
 julia> ccf_form(R, C; columnLM = true)
 [2   r_1_1    1       0   0       0]
 [1   r_2_1    0   r_2_2   0       0]
