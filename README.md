@@ -21,7 +21,7 @@ package has an interface to [Catalyst.jl](https://github.com/SciML/Catalyst.jl) 
 [Oscar.jl](https://github.com/oscar-system/Oscar.jl).
 
 ## Installation
-
+To install the package, run the following commands:
 ```julia
 using Pkg
 Pkg.add(url = "https://github.com/ArneKuhrs/LayeredMixedMatrices.jl")
