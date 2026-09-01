@@ -190,10 +190,10 @@ From the repository root, with the `examples` environment instantiated as above:
 julia> include("examples/paper_computations.jl")
 ```
 
-`examples/Manifest.toml` pins the exact package versions used. Two networks are
-treated: the running example above, and
-[BIOMD0000000407](https://www.ebi.ac.uk/biomodels/BIOMD0000000407)
-(Schliemann et al., TNF pro/anti-apoptosis; 47 species, 106 reactions).
+`examples/Manifest.toml` pins the exact package versions used. Two networks are treated: the running example above, and the *nominal cell model* of
+Schliemann et al., with 47 species and 106 reactions, available as
+[BIOMD0000000407](https://www.ebi.ac.uk/biomodels/BIOMD0000000407) in BioModels and
+in [ODEbase](https://www.odebase.org/).
 
 For the latter the CCF has 50 diagonal blocks and is computed in milliseconds. Of
 these, 26 carry symbolic variables and hence give the 26 irreducible factors of the
