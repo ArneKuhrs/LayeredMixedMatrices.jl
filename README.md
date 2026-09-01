@@ -16,13 +16,13 @@ nonzero entries of the generic part `T` are algebraically independent over the f
 to which the entries of the rational part `Q` belong. Its **combinatorial canonical
 form** is the combinatorially unique finest block-triangular form attainable under
 LM-equivalence, that is, under row and column permutations together with a change of
-basis of the numeric part. The block structure is uniquely determined; the entries of
+basis of the numeric part. The block structure is uniquely determined, the entries of
 the numeric part are not. When the `Q`-part is empty, the CCF reduces to the
 Dulmage–Mendelsohn decomposition.
 
-The CCF was established by Murota, Iri and Nakamura; see Murota, *Matrices and
+The CCF was established by Murota, Iri and Nakamura, see Murota, *Matrices and
 Matroids for Systems Analysis* (Springer, 2000) for a full account. It is computable
-in polynomial time by matroid-theoretic methods, via a submodular flow model. Two of
+in polynomial time by matroid-theoretic methods, via a submodular function. Two of
 its properties drive everything below: the determinant factors as the product of the
 determinants of the diagonal blocks, and the block poset governs the zero pattern of
 the inverse.
@@ -104,8 +104,7 @@ Three diagonal blocks, each 2x2. Reading them against the network:
 
 The algorithm recovers the influence graph of the reaction network from the network
 structure alone, that is, from the stoichiometric matrix `S` and the support pattern
-of `R`. No kinetics, no rate constants and no numerical values enter the computation.
-The product of the three block determinants is, up to a nonzero constant, the full
+of `R`. The product of the three block determinants is, up to a nonzero constant, the full
 symbolic Jacobian determinant.
 
 `C0` and `C∞`, the column index sets of Murota's horizontal and vertical tails, are
