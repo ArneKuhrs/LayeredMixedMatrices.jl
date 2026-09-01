@@ -46,8 +46,7 @@ X1 -> 2 X1                  X2 -> 2 X2                  X3 -> 2 X3
 2 X1 + X2 -> X2             X2 -> X1 + 3 X2             X3 -> 0
 ```
 
-The core routines need no external dependencies — supply the two matrices directly.
-`C` is a basis of `ker(S)`, and `Rpat` is the support of the symbolic reactivity
+The matrix `C` is a basis of `ker(S)`, and `Rpat` is the support of the symbolic reactivity
 matrix: `Rpat[rho, m]` is `true` exactly when species `X_m` is a reactant of
 reaction `rho`.
 
@@ -86,11 +85,13 @@ Three diagonal blocks, each 2x2. Reading them against the network:
 | `C2` | 3, 4 | `X2` | `r_3_2 + 2 r_4_2` |
 | `C3` | 1, 2 | `X1` | `2 r_2_1 - r_1_1` |
 
-The algorithm recovers the species-wise structure from the support pattern and the
-kernel alone; it is never told which reaction involves which species. The product of
-the three block determinants is, up to sign, the full symbolic Jacobian determinant.
+The algorithm recovers the influence graph of the reaction network from the network
+structure alone, that is, from the stoichiometric matrix `S` and the support pattern
+of `R`. No kinetics, no rate constants and no numerical values enter the computation.
+The product of the three block determinants is, up to a nonzero constant, the full
+symbolic Jacobian determinant.
 
-`C0` and `Cinf`, the horizontal and vertical tails, are both empty, which is exactly
+`C0` and `C∞`, the horizontal and vertical tails, are both empty, which is exactly
 the statement that the matrix is square and nonsingular.
 
 The poset has the single cover relation `C2 -> C3`, with `C1` incomparable to both.
@@ -102,6 +103,7 @@ order ideals, and these are the six buffering structures of the network.
 
 In the `examples` environment the same computation runs from the network itself, and
 returns the actual symbolic determinants rather than only the block structure.
+The `include` path below is relative, so run this from the repository root.
 
 ```julia
 using LayeredMixedMatrices, Oscar, Catalyst
@@ -167,12 +169,20 @@ The two modes take their arguments in opposite orders:
 
 ## API
 
-`ccf(A; maxiter)` — CCF with greedy initialisation (Steps A and B).
-`ccf_original(A; maxiter)` — the published algorithm, starting from an empty
-matching. Both return the same `CCFResult`; the first is faster.
+Both entry points compute the same combinatorial canonical form and return the same
+`CCFResult`. They differ only in the initialisation, which is where the speed comes
+from.
 
-A `CCFResult` carries the column blocks `C0, Cblocks, Cinf`, the corresponding row
-blocks `R0Q/R0T`, `RblocksQ/RblocksT`, `RinfQ/RinfT`, the pivoted matrix `P`, and the
+| function | algorithm |
+|---|---|
+| `ccf(A; maxiter)` | The algorithm of Murota and Scharbrodt. Step A builds a greedy initial matching in the generic part, Step B a greedy initial basis of the numeric part, and the augmenting-path phase then proceeds from there. This is the recommended entry point and the one used for the computations in the paper. |
+| `ccf_original(A; maxiter)` | Murota's original algorithm: the same augmenting-path phase, but started from the empty matching. Kept as a reference implementation. |
+
+Because the CCF is canonical, the two must return identical block structures on every
+input, which makes `ccf_original` a useful correctness check on `ccf`.
+
+A `CCFResult` carries the column blocks `C0, Cblocks, C∞`, the corresponding row
+blocks `R0Q/R0T`, `RblocksQ/RblocksT`, `R∞Q/R∞T`, the pivoted matrix `P`, and the
 permutations `rowperm`, `colperm`.
 
 | function | returns |
@@ -180,10 +190,12 @@ permutations `rowperm`, `colperm`.
 | `column_block_order(res)` | reflexive Boolean matrix of the block partial order |
 | `column_block_order_pairs(res)` | the same order as pairs `(k,l)` |
 | `block_poset(res)` | cover relations (Hasse edges) |
-| `reverse_block_order(res)` | permutations listing blocks in reversed order |
 | `ccf_pattern_matrix(A, res)` | the block-triangular support pattern |
-| `ccf_form(T, Q; columnLM)` | the block-triangular matrix itself |
+| `reverse_block_order(res)` | permutations listing blocks in reversed order |
 | `print_matrix(io, M)` | aligned printing |
+
+`ccf_form(T, Q; columnLM)`, which returns the block-triangular matrix itself, is not
+part of the package: it is defined in `examples/oscar_interface.jl` and requires Oscar.
 
 ## Reproducing the computations in the paper
 
