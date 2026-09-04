@@ -14,7 +14,7 @@ rn = @reaction_network begin
         k6, X3 --> 0
 end
 #Set up the data
-S = matrix(ZZ, netstoichmat(rn)) #stoiciometric matrix
+S = matrix(ZZ, netstoichmat(rn)) #stoichiometric matrix
 Sminus = matrix(ZZ, substoichmat(rn)) #reactant matrix
 n,r = size(S)
 T, _, R = get_symbolic_matrix(transpose(Sminus)) #T is the polynomial ring where the symbols in Rt live in
@@ -25,23 +25,23 @@ factor(det(A))
 #Row LM-matrices
 MT = transpose(R)
 MQ = transpose(C)
-ccf_res = ccf(MQ,MT,columnLM = false)
+ccf_res_row = ccf(MQ,MT,columnLM = false)
 L_ccf = ccf_form(MQ,MT,columnLM = false)
 
 #Column CCF
-ccf_res2 = ccf(R,C,columnLM = true)
+ccf_res_col = ccf(R,C,columnLM = true)
 
-for i in eachindex(ccf_res2.Cblocks)
-    B = vcat(matrix(T, ccf_res2.P[ccf_res2.RblocksQ[i], ccf_res2.Cblocks[i]]),
-             transpose(R)[ccf_res2.RblocksT[i], ccf_res2.Cblocks[i]])
+for i in eachindex(ccf_res_col.Cblocks)
+    B = vcat(matrix(T, ccf_res_col.P[ccf_res_col.RblocksQ[i], ccf_res_col.Cblocks[i]]),
+             transpose(R)[ccf_res_col.RblocksT[i], ccf_res_col.Cblocks[i]])
     println(i, ": ", det(B))
 end
 
-reverse_block_order(ccf_res2)
+reverse_block_order(ccf_res_col)
 A_ccf = ccf_form(R,C,columnLM = true)
-column_block_order(ccf_res2)
-column_block_order_pairs(ccf_res2)
-block_poset(ccf_res2)
+column_block_order(ccf_res_col)
+column_block_order_pairs(ccf_res_col)
+block_poset(ccf_res_col)
 
 #BIG example BIOMD0000000407
 #Schliemann2011_TNF_ProAntiApoptosis
@@ -138,16 +138,17 @@ end
 
 
 #Set up the data
-S = matrix(ZZ, netstoichmat(rn)) #stoiciometric matrix
+S = matrix(ZZ, netstoichmat(rn)) #stoichiometric matrix
 Sminus = matrix(ZZ, substoichmat(rn)) #reactant matrix
 T, _, R = get_symbolic_matrix(transpose(Sminus)) #T is the polynomial ring where the symbols in Rt live in
 C = nullspace(S)[2]
-@time ccf_res2 = ccf(R,C,columnLM = true)
+@time ccf_res = ccf(R,C,columnLM = true)
 
-@time for i in 1:50
-    diagonal_block = vcat(matrix(T,ccf_res2.P[ ccf_res2.RblocksQ[i],ccf_res2.Cblocks[i]]),transpose(R)[ ccf_res2.RblocksT[i],ccf_res2.Cblocks[i]])
+@time for i in eachindex(ccf_res.Cblocks)
+    diagonal_block = vcat(matrix(T,ccf_res.P[ccf_res.RblocksQ[i],ccf_res.Cblocks[i]]),
+                          transpose(R)[ccf_res.RblocksT[i],ccf_res.Cblocks[i]])
     D = det(diagonal_block)
-    println(length(ccf_res2.Cblocks[i]),", ",length(vars(D)),", ", length(monomials(D)))
+    println(length(ccf_res.Cblocks[i]),", ",length(vars(D)),", ", length(monomials(D)))
 end
 
 #did not finish in 30 minutes
@@ -155,6 +156,6 @@ end
 #det(A)
 
 #Column CCF
-column_block_order(ccf_res2)
-column_block_order_pairs(ccf_res2)
-block_poset(ccf_res2)
+column_block_order(ccf_res)
+column_block_order_pairs(ccf_res)
+block_poset(ccf_res)
