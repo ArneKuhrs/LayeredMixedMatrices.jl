@@ -13,9 +13,9 @@ implementation follows the algorithm of Murota and Scharbrodt,
 Optimization Methods and Software, 1998.
 
 For a reaction network with stoichiometric matrix `S` and symbolic reactivity matrix
-`R`, the symbolic Jacobian `G = SR` satisfies `det(G) = c * det([R | C])` for a Gale
-dual `C` of `S` and a nonzero constant `c`. The CCF of `[R | C]` then gives, in one
-computation, the irreducible factorization of `det(G)`, the buffering structures of
+`R`, the symbolic Jacobian is the product `SR`, and `det(SR) = c * det([R | C])` for a
+Gale dual `C` of `S` and a nonzero constant `c`. The CCF of `[R | C]` then gives, in one
+computation, the irreducible factorization of `det(SR)`, the buffering structures of
 the network as the order ideals of the block poset, and the influence graph. The
 package has an interface to [Catalyst.jl](https://github.com/SciML/Catalyst.jl) and
 [Oscar.jl](https://github.com/oscar-system/Oscar.jl).
